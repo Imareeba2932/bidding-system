@@ -1,0 +1,41 @@
+
+
+{% extends 'base.html' %}
+{% block title %}Bids{% endblock %}
+{% block content %}
+<h2>Bids</h2>
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Auction</th>
+            <th>User</th>
+            <th>Amount</th>
+            <th>Time</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for b in bids %}
+        <tr>
+            <td>{{ b.id }}</td>
+            <td>{{ b.auction.title if b.auction and b.auction.title is defined else b.auction.name }}</td>
+            <td>{{ b.user.name if b.user and b.user.name is defined else b.user.name }}</td>
+            <td>{{ b.amount }}</td>
+            <td>{{ b.bid_time }}</td>
+            <td>
+                {% if b.approved %}<span class="badge badge-success">Approved</span>{% elif b.rejected %}<span class="badge badge-danger">Rejected</span>{% else %}<span class="badge badge-secondary">Pending</span>{% endif %}
+            </td>
+            <td>
+                {% if not b.approved and not b.rejected %}
+                    <a href="{{ url_for('approve_bid', id=b.id) }}" class="btn btn-sm btn-success">Approve</a>
+                    <a href="{{ url_for('reject_bid', id=b.id) }}" class="btn btn-sm btn-danger">Reject</a>
+                {% endif %}
+                <a href="{{ url_for('delete_bid', id=b.id) }}" class="btn btn-sm btn-warning" onclick="return confirm('Delete this bid?')">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

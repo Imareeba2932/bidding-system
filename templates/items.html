@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Auction Items{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="text-warning mb-0"><i class="fas fa-cube mr-2"></i>Auction Items</h2>
+    <a href="/add_item" class="btn btn-warning text-dark font-weight-bold"><i class="fas fa-plus mr-1"></i> Add Item</a>
+</div>
+<div class="table-responsive">
+<table class="table table-dark table-hover table-bordered rounded">
+    <thead class="thead-dark">
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Base Price</th>
+            <th>Image</th>
+            <th>Status</th>
+            <th>Auction</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in items %}
+        <tr>
+            <td>{{ item.id }}</td>
+            <td>{{ item.name }}</td>
+            <td>{{ item.description }}</td>
+            <td>₹{{ item.base_price }}</td>
+            <td>{% if item.image_url %}<img src="{{ item.image_url }}" width="60" class="img-thumbnail">{% endif %}</td>
+            <td>
+                {% if item.status == 'active' %}
+                    <span class="badge badge-success">Active</span>
+                {% elif item.status == 'sold' %}
+                    <span class="badge badge-warning text-dark">Sold</span>
+                {% else %}
+                    <span class="badge badge-secondary">Removed</span>
+                {% endif %}
+            </td>
+            <td>{{ item.auction_id }}</td>
+            <td>
+                <a href="/edit_item/{{ item.id }}" class="btn btn-sm btn-outline-warning" title="Edit"><i class="fas fa-edit"></i></a>
+                <a href="/delete_item/{{ item.id }}" class="btn btn-sm btn-outline-danger" title="Delete" onclick="return confirm('Delete this item?')"><i class="fas fa-trash"></i></a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+
+
+{% extends 'base.html' %}
+{% block title %}Categories{% endblock %}
+{% block content %}
+<h2>Categories</h2>
+<form method="post" class="form-inline mb-3">
+    <input name="name" class="form-control mr-2" placeholder="New Category" required>
+    <button type="submit" class="btn btn-success">Add</button>
+</form>
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for cat in categories %}
+        <tr>
+            <td>{{ cat.id }}</td>
+            <td>{{ cat.name }}</td>
+            <td>
+                <a href="/delete_category/{{ cat.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this category?')">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

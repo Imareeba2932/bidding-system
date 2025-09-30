@@ -1,0 +1,37 @@
+
+
+{% extends 'base.html' %}
+{% block title %}Auctions{% endblock %}
+{% block content %}
+<h2>Auctions</h2>
+<a href="/create_auction" class="btn btn-success mb-2">Create Auction</a>
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Category</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for a in auctions %}
+        <tr>
+            <td>{{ a.id }}</td>
+            <td>{{ a.title }}</td>
+            <td>{{ a.description }}</td>
+            <td>{{ a.category.name if a.category else '' }}</td>
+            <td>{{ a.start_date }}</td>
+            <td>{{ a.end_date }}</td>
+            <td>
+                <a href="/edit_auction/{{ a.id }}" class="btn btn-sm btn-primary">Edit</a>
+                <a href="/delete_auction/{{ a.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this auction?')">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

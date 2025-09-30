@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h2 class="text-warning mb-4"><i class="fas fa-tachometer-alt mr-2"></i>Dashboard</h2>
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card bg-dark text-warning shadow h-100">
+            <div class="card-body d-flex flex-column align-items-center">
+                <i class="fas fa-users fa-3x mb-2"></i>
+                <h5 class="card-title">Total Users</h5>
+                <p class="display-4 mb-1">{{ users }}</p>
+                <small>Active: {{ active_users }} | Inactive: {{ inactive_users }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card bg-dark text-warning shadow h-100">
+            <div class="card-body d-flex flex-column align-items-center">
+                <i class="fas fa-cube fa-3x mb-2"></i>
+                <h5 class="card-title">Auction Items</h5>
+                <p class="display-4 mb-1">{{ items }}</p>
+                <small>Active: {{ active_items }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card bg-dark text-warning shadow h-100">
+            <div class="card-body d-flex flex-column align-items-center">
+                <i class="fas fa-gavel fa-3x mb-2"></i>
+                <h5 class="card-title">Auctions</h5>
+                <p class="display-4 mb-1">{{ auctions }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card bg-dark text-warning shadow h-100">
+            <div class="card-body d-flex flex-column align-items-center">
+                <i class="fas fa-hand-paper fa-3x mb-2"></i>
+                <h5 class="card-title">Bids</h5>
+                <p class="display-4 mb-1">{{ bids }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card bg-dark text-warning shadow h-100">
+            <div class="card-body d-flex flex-column align-items-center">
+                <i class="fas fa-list fa-3x mb-2"></i>
+                <h5 class="card-title">Categories</h5>
+                <p class="display-4 mb-1">{{ categories }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

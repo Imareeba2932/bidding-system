@@ -1,0 +1,13 @@
+<h2>{{ 'Edit' if auction else 'Create' }} Auction</h2>
+<form method="post">
+    <input name="title" placeholder="Title" value="{{ auction.title if auction else '' }}" required>
+    <textarea name="description" placeholder="Description">{{ auction.description if auction else '' }}</textarea>
+    <input name="start_date" type="date" value="{{ auction.start_date.strftime('%Y-%m-%d') if auction else '' }}" required>
+    <input name="end_date" type="date" value="{{ auction.end_date.strftime('%Y-%m-%d') if auction else '' }}" required>
+    <select name="category_id" required>
+        {% for c in categories %}
+            <option value="{{ c.id }}" {% if auction and auction.category_id == c.id %}selected{% endif %}>{{ c.name }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Save</button>
+</form>

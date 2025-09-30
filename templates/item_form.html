@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Add/Edit Item{% endblock %}
+{% block content %}
+<h2>{% if item %}Edit{% else %}Add{% endif %} Auction Item</h2>
+<form method="post">
+    <div class="form-group">
+        <label>Name</label>
+        <input type="text" name="name" class="form-control" value="{{ item.name if item else '' }}" required>
+    </div>
+    <div class="form-group">
+        <label>Description</label>
+        <textarea name="description" class="form-control" required>{{ item.description if item else '' }}</textarea>
+    </div>
+    <div class="form-group">
+        <label>Base Price</label>
+        <input type="number" step="0.01" name="base_price" class="form-control" value="{{ item.base_price if item else '' }}" required>
+    </div>
+    <div class="form-group">
+        <label>Image URL</label>
+        <input type="text" name="image_url" class="form-control" value="{{ item.image_url if item else '' }}">
+    </div>
+    <div class="form-group">
+        <label>Auction</label>
+        <select name="auction_id" class="form-control" required>
+            {% for auction in auctions %}
+            <option value="{{ auction.id }}" {% if item and item.auction_id==auction.id %}selected{% endif %}>{{ auction.title }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Status</label>
+        <select name="status" class="form-control">
+            <option value="active" {% if item and item.status=='active' %}selected{% endif %}>Active</option>
+            <option value="sold" {% if item and item.status=='sold' %}selected{% endif %}>Sold</option>
+            <option value="removed" {% if item and item.status=='removed' %}selected{% endif %}>Removed</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+    <a href="/items" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}
