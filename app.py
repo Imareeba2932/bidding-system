@@ -54,7 +54,6 @@ class Bid(db.Model):
 
 # ------------------ ROUTES ------------------
 
-@app.before_first_request
 def create_tables():
     db.create_all()
     if not User.query.filter_by(email="admin@example.com").first():
@@ -63,33 +62,17 @@ def create_tables():
         db.session.add(admin)
         db.session.commit()
 
+# Initialize database on app startup
+with app.app_context():
+    create_tables()
+
 @app.route('/')
 def home():
-    if 'admin' not in session:
-        return redirect('/login')
-    return redirect('/dashboard')
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-        admin = User.query.filter_by(email=email).first()
-        if admin and check_password_hash(admin.password, password):
-            session['admin'] = admin.id
-            return redirect('/dashboard')
-        else:
-            flash("Invalid credentials", "danger")
-    return render_template('login.html')
-
-@app.route('/logout')
-def logout():
-    session.pop('admin', None)
-    return redirect('/login')
+    return render_template('landing.html')
 
 @app.route('/dashboard')
 def dashboard():
-    if 'admin' not in session:
+    if 'user_id' not in session:
         return redirect('/login')
     users = User.query.count()
     active_users = User.query.filter_by(status='active').count()
@@ -111,12 +94,99 @@ def dashboard():
         categories=categories
     )
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        user = User.query.filter_by(email=email).first()
+        
+        if user and check_password_hash(user.password, password):
+            if user.status == 'inactive':
+                flash("Your account has been deactivated. Please contact administrator.", "danger")
+                return render_template('login.html')
+            
+            session['user_id'] = user.id
+            session['user_name'] = user.name
+            session['user_role'] = user.role
+            flash(f"Welcome back, {user.name}!", "success")
+            return redirect('/dashboard')
+        else:
+            flash("Invalid email or password", "danger")
+    return render_template('login.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        password = request.form['password']
+        confirm_password = request.form['confirm_password']
+        role = request.form['role']
+        
+        # Validation
+        if not name or len(name.strip()) < 2:
+            flash("Name must be at least 2 characters long", "danger")
+            return render_template('register.html')
+        
+        if not email or '@' not in email:
+            flash("Please enter a valid email address", "danger")
+            return render_template('register.html')
+        
+        if len(password) < 8:
+            flash("Password must be at least 8 characters long", "danger")
+            return render_template('register.html')
+        
+        if password != confirm_password:
+            flash("Passwords do not match", "danger")
+            return render_template('register.html')
+        
+        if not role:
+            flash("Please select a role", "danger")
+            return render_template('register.html')
+        
+        # Check if user already exists
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            flash("An account with this email already exists", "danger")
+            return render_template('register.html')
+        
+        # Create new user
+        hashed_password = generate_password_hash(password)
+        new_user = User(
+            name=name.strip(),
+            email=email.lower().strip(),
+            password=hashed_password,
+            role=role,
+            status='active'
+        )
+        
+        try:
+            db.session.add(new_user)
+            db.session.commit()
+            flash("Account created successfully! Please login.", "success")
+            return redirect('/login')
+        except Exception as e:
+            db.session.rollback()
+            flash("An error occurred while creating your account. Please try again.", "danger")
+            return render_template('register.html')
+    
+    return render_template('register.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    session.pop('user_name', None)
+    session.pop('user_role', None)
+    flash("You have been logged out successfully", "info")
+    return redirect('/login')
+
 # ------------------ USERS ------------------
 
 
 @app.route('/users')
 def manage_users():
-    if 'admin' not in session:
+    if 'user_id' not in session:
         return redirect('/login')
     users = User.query.all()
     return render_template('users.html', users=users)
@@ -124,7 +194,7 @@ def manage_users():
 # Add User
 @app.route('/add_user', methods=['GET', 'POST'])
 def add_user():
-    if 'admin' not in session:
+    if 'user_id' not in session:
         return redirect('/login')
     if request.method == 'POST':
         name = request.form['name']
@@ -140,7 +210,7 @@ def add_user():
 # Edit User
 @app.route('/edit_user/<int:id>', methods=['GET', 'POST'])
 def edit_user(id):
-    if 'admin' not in session:
+    if 'user_id' not in session:
         return redirect('/login')
     user = User.query.get(id)
     if request.method == 'POST':
@@ -155,7 +225,7 @@ def edit_user(id):
 # Deactivate User
 @app.route('/deactivate_user/<int:id>')
 def deactivate_user(id):
-    if 'admin' not in session:
+    if 'user_id' not in session:
         return redirect('/login')
     user = User.query.get(id)
     user.status = 'inactive'
@@ -167,7 +237,7 @@ def deactivate_user(id):
 
 @app.route('/reject_bid/<int:id>')
 def reject_bid(id):
-    if 'admin' not in session:
+    if 'user_id' not in session:
         return redirect('/login')
     bid = Bid.query.get(id)
     if bid:
@@ -182,7 +252,7 @@ def reject_bid(id):
 
 @app.route('/delete_bid/<int:id>')
 def delete_bid(id):
-    if 'admin' not in session:
+    if 'user_id' not in session:
         return redirect('/login')
     bid = Bid.query.get(id)
     if bid:
@@ -198,7 +268,7 @@ def delete_bid(id):
 
 @app.route('/auctions')
 def manage_auctions():
-    if 'admin' not in session:
+    if 'user_id' not in session:
         return redirect('/login')
     auctions = Auction.query.all()
     return render_template('auctions.html', auctions=auctions)
@@ -206,7 +276,7 @@ def manage_auctions():
 # Update Auction Status
 @app.route('/update_auction_status/<int:id>', methods=['POST'])
 def update_auction_status(id):
-    if 'admin' not in session:
+    if 'user_id' not in session:
         return redirect('/login')
     auction = Auction.query.get(id)
     auction.status = request.form['status']
@@ -215,7 +285,7 @@ def update_auction_status(id):
 
 @app.route('/create_auction', methods=['GET', 'POST'])
 def create_auction():
-    if 'admin' not in session:
+    if 'user_id' not in session:
         return redirect('/login')
     categories = Category.query.all()
     if request.method == 'POST':
@@ -233,7 +303,7 @@ def create_auction():
 
 @app.route('/edit_auction/<int:id>', methods=['GET', 'POST'])
 def edit_auction(id):
-    if 'admin' not in session:
+    if 'user_id' not in session:
         return redirect('/login')
     auction = Auction.query.get(id)
     categories = Category.query.all()
@@ -249,7 +319,7 @@ def edit_auction(id):
 
 @app.route('/delete_auction/<int:id>')
 def delete_auction(id):
-    if 'admin' not in session:
+    if 'user_id' not in session:
         return redirect('/login')
     auction = Auction.query.get(id)
     db.session.delete(auction)
@@ -260,7 +330,7 @@ def delete_auction(id):
 
 @app.route('/bids')
 def manage_bids():
-    if 'admin' not in session:
+    if 'user_id' not in session:
         return redirect('/login')
     bids = Bid.query.all()
     # If no real bids, show 10 dummy bids
@@ -290,7 +360,7 @@ def manage_bids():
 # Approve Bid (optional, add 'approved' field in Bid model if needed)
 @app.route('/approve_bid/<int:id>')
 def approve_bid(id):
-    if 'admin' not in session:
+    if 'user_id' not in session:
         return redirect('/login')
     bid = Bid.query.get(id)
     if bid:
@@ -301,7 +371,7 @@ def approve_bid(id):
 
 # @app.route('/reject_bid/<int:id>')
 # def reject_bid(id):
-#     if 'admin' not in session:
+#     if 'user_id' not in session:
 #         return redirect('/login')
 #     bid = Bid.query.get(id)
 #     if bid:
@@ -310,23 +380,19 @@ def approve_bid(id):
 #         db.session.commit()
 #     return redirect('/bids')
 
-# ------------------ MAIN ------------------
-
-if __name__ == '__main__':
-    app.run(debug=True)
 
 # ------------------ AUCTION ITEMS ------------------
 
 @app.route('/items')
 def manage_items():
-    if 'admin' not in session:
+    if 'user_id' not in session:
         return redirect('/login')
     items = AuctionItem.query.all()
     return render_template('items.html', items=items)
 
 @app.route('/add_item', methods=['GET', 'POST'])
 def add_item():
-    if 'admin' not in session:
+    if 'user_id' not in session:
         return redirect('/login')
     auctions = Auction.query.all()
     if request.method == 'POST':
@@ -345,7 +411,7 @@ def add_item():
 
 @app.route('/edit_item/<int:id>', methods=['GET', 'POST'])
 def edit_item(id):
-    if 'admin' not in session:
+    if 'user_id' not in session:
         return redirect('/login')
     item = AuctionItem.query.get(id)
     auctions = Auction.query.all()
@@ -362,12 +428,48 @@ def edit_item(id):
 
 @app.route('/delete_item/<int:id>')
 def delete_item(id):
-    if 'admin' not in session:
+    if 'user_id' not in session:
         return redirect('/login')
     item = AuctionItem.query.get(id)
     db.session.delete(item)
     db.session.commit()
     return redirect('/items')
 
+# ------------------ CATEGORIES ------------------
+
+@app.route('/categories')
+def manage_categories():
+    if 'user_id' not in session:
+        return redirect('/login')
+    categories = Category.query.all()
+    return render_template('categories.html', categories=categories)
+
+@app.route('/add_category', methods=['POST'])
+def add_category():
+    if 'user_id' not in session:
+        return redirect('/login')
+    name = request.form['name']
+    if name:
+        category = Category(name=name)
+        db.session.add(category)
+        db.session.commit()
+        flash(f"Category '{name}' added successfully!", "success")
+    return redirect('/categories')
+
+@app.route('/delete_category/<int:id>')
+def delete_category(id):
+    if 'user_id' not in session:
+        return redirect('/login')
+    category = Category.query.get(id)
+    if category:
+        db.session.delete(category)
+        db.session.commit()
+        flash(f"Category '{category.name}' deleted successfully!", "warning")
+    return redirect('/categories')
+
 # ------------------ NAVIGATION LINKS ------------------
 # Add navigation links in your base.html for: Dashboard | Users | Items | Auctions | Bids | Categories | Logout
+# ------------------ MAIN ------------------
+
+if __name__ == '__main__':
+    app.run(debug=True)

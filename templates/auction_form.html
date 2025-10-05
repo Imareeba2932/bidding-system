@@ -1,13 +1,50 @@
-<h2>{{ 'Edit' if auction else 'Create' }} Auction</h2>
-<form method="post">
-    <input name="title" placeholder="Title" value="{{ auction.title if auction else '' }}" required>
-    <textarea name="description" placeholder="Description">{{ auction.description if auction else '' }}</textarea>
-    <input name="start_date" type="date" value="{{ auction.start_date.strftime('%Y-%m-%d') if auction else '' }}" required>
-    <input name="end_date" type="date" value="{{ auction.end_date.strftime('%Y-%m-%d') if auction else '' }}" required>
-    <select name="category_id" required>
-        {% for c in categories %}
-            <option value="{{ c.id }}" {% if auction and auction.category_id == c.id %}selected{% endif %}>{{ c.name }}</option>
-        {% endfor %}
-    </select>
-    <button type="submit">Save</button>
-</form>
+{% extends 'base.html' %}
+{% block title %}{{ 'Edit' if auction else 'Create' }} Auction{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card bg-dark text-warning shadow">
+            <div class="card-body">
+                <h2 class="mb-4 text-center">{% if auction %}<i class="fas fa-edit mr-2"></i>Edit{% else %}<i class="fas fa-plus mr-2"></i>Create{% endif %} Auction</h2>
+                <form method="post">
+                    <div class="form-group">
+                        <label><i class="fas fa-heading mr-1"></i>Title</label>
+                        <input name="title" class="form-control bg-light" placeholder="Auction Title" value="{{ auction.title if auction else '' }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-align-left mr-1"></i>Description</label>
+                        <textarea name="description" class="form-control bg-light" placeholder="Auction Description" rows="4" required>{{ auction.description if auction else '' }}</textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label><i class="fas fa-calendar-alt mr-1"></i>Start Date</label>
+                                <input name="start_date" type="date" class="form-control bg-light" value="{% if auction and auction.start_date %}{% if auction.start_date.strftime is defined %}{{ auction.start_date.strftime('%Y-%m-%d') }}{% else %}{{ auction.start_date }}{% endif %}{% endif %}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label><i class="fas fa-calendar-alt mr-1"></i>End Date</label>
+                                <input name="end_date" type="date" class="form-control bg-light" value="{% if auction and auction.end_date %}{% if auction.end_date.strftime is defined %}{{ auction.end_date.strftime('%Y-%m-%d') }}{% else %}{{ auction.end_date }}{% endif %}{% endif %}" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-list mr-1"></i>Category</label>
+                        <select name="category_id" class="form-control bg-light" required>
+                            <option value="">Select Category</option>
+                            {% for c in categories %}
+                                <option value="{{ c.id }}" {% if auction and auction.category_id == c.id %}selected{% endif %}>{{ c.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="submit" class="btn btn-warning text-dark font-weight-bold px-4"><i class="fas fa-save mr-1"></i>Save</button>
+                        <a href="/auctions" class="btn btn-outline-light px-4">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

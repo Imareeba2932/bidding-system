@@ -1,12 +1,14 @@
 
-
 {% extends 'base.html' %}
 {% block title %}Auctions{% endblock %}
 {% block content %}
-<h2>Auctions</h2>
-<a href="/create_auction" class="btn btn-success mb-2">Create Auction</a>
-<table class="table table-bordered table-striped">
-    <thead>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="text-warning mb-0"><i class="fas fa-gavel mr-2"></i>Auctions</h2>
+    <a href="/create_auction" class="btn btn-warning text-dark font-weight-bold"><i class="fas fa-plus mr-1"></i> Create Auction</a>
+</div>
+<div class="table-responsive">
+<table class="table table-dark table-hover table-bordered rounded">
+    <thead class="thead-dark">
         <tr>
             <th>ID</th>
             <th>Title</th>
@@ -23,15 +25,42 @@
             <td>{{ a.id }}</td>
             <td>{{ a.title }}</td>
             <td>{{ a.description }}</td>
-            <td>{{ a.category.name if a.category else '' }}</td>
-            <td>{{ a.start_date }}</td>
-            <td>{{ a.end_date }}</td>
             <td>
-                <a href="/edit_auction/{{ a.id }}" class="btn btn-sm btn-primary">Edit</a>
-                <a href="/delete_auction/{{ a.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this auction?')">Delete</a>
+                {% if a.category %}
+                    <span class="badge badge-warning text-dark">{{ a.category.name }}</span>
+                {% else %}
+                    <span class="badge badge-secondary">No Category</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if a.start_date %}
+                    {% if a.start_date.strftime is defined %}
+                        {{ a.start_date.strftime('%Y-%m-%d') }}
+                    {% else %}
+                        {{ a.start_date }}
+                    {% endif %}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td>
+                {% if a.end_date %}
+                    {% if a.end_date.strftime is defined %}
+                        {{ a.end_date.strftime('%Y-%m-%d') }}
+                    {% else %}
+                        {{ a.end_date }}
+                    {% endif %}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td>
+                <a href="/edit_auction/{{ a.id }}" class="btn btn-sm btn-outline-warning" title="Edit"><i class="fas fa-edit"></i></a>
+                <a href="/delete_auction/{{ a.id }}" class="btn btn-sm btn-outline-danger" title="Delete" onclick="return confirm('Delete this auction?')"><i class="fas fa-trash"></i></a>
             </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+</div>
 {% endblock %}

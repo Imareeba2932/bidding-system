@@ -1,41 +1,52 @@
 {% extends 'base.html' %}
 {% block title %}Add/Edit Item{% endblock %}
 {% block content %}
-<h2>{% if item %}Edit{% else %}Add{% endif %} Auction Item</h2>
-<form method="post">
-    <div class="form-group">
-        <label>Name</label>
-        <input type="text" name="name" class="form-control" value="{{ item.name if item else '' }}" required>
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card bg-dark text-warning shadow">
+            <div class="card-body">
+                <h2 class="mb-4 text-center">{% if item %}<i class="fas fa-edit mr-2"></i>Edit{% else %}<i class="fas fa-plus mr-2"></i>Add{% endif %} Auction Item</h2>
+                <form method="post">
+                    <div class="form-group">
+                        <label><i class="fas fa-tag mr-1"></i>Name</label>
+                        <input type="text" name="name" class="form-control bg-light" value="{{ item.name if item else '' }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-align-left mr-1"></i>Description</label>
+                        <textarea name="description" class="form-control bg-light" required rows="4">{{ item.description if item else '' }}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-rupee-sign mr-1"></i>Base Price</label>
+                        <input type="number" step="0.01" name="base_price" class="form-control bg-light" value="{{ item.base_price if item else '' }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-image mr-1"></i>Image URL</label>
+                        <input type="text" name="image_url" class="form-control bg-light" value="{{ item.image_url if item else '' }}" placeholder="https://example.com/image.jpg">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-gavel mr-1"></i>Auction</label>
+                        <select name="auction_id" class="form-control bg-light" required>
+                            <option value="">Select Auction</option>
+                            {% for auction in auctions %}
+                            <option value="{{ auction.id }}" {% if item and item.auction_id==auction.id %}selected{% endif %}>{{ auction.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-info-circle mr-1"></i>Status</label>
+                        <select name="status" class="form-control bg-light">
+                            <option value="active" {% if item and item.status=='active' %}selected{% endif %}>Active</option>
+                            <option value="sold" {% if item and item.status=='sold' %}selected{% endif %}>Sold</option>
+                            <option value="removed" {% if item and item.status=='removed' %}selected{% endif %}>Removed</option>
+                        </select>
+                    </div>
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="submit" class="btn btn-warning text-dark font-weight-bold px-4"><i class="fas fa-save mr-1"></i>Submit</button>
+                        <a href="/items" class="btn btn-outline-light px-4">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-    <div class="form-group">
-        <label>Description</label>
-        <textarea name="description" class="form-control" required>{{ item.description if item else '' }}</textarea>
-    </div>
-    <div class="form-group">
-        <label>Base Price</label>
-        <input type="number" step="0.01" name="base_price" class="form-control" value="{{ item.base_price if item else '' }}" required>
-    </div>
-    <div class="form-group">
-        <label>Image URL</label>
-        <input type="text" name="image_url" class="form-control" value="{{ item.image_url if item else '' }}">
-    </div>
-    <div class="form-group">
-        <label>Auction</label>
-        <select name="auction_id" class="form-control" required>
-            {% for auction in auctions %}
-            <option value="{{ auction.id }}" {% if item and item.auction_id==auction.id %}selected{% endif %}>{{ auction.title }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="form-group">
-        <label>Status</label>
-        <select name="status" class="form-control">
-            <option value="active" {% if item and item.status=='active' %}selected{% endif %}>Active</option>
-            <option value="sold" {% if item and item.status=='sold' %}selected{% endif %}>Sold</option>
-            <option value="removed" {% if item and item.status=='removed' %}selected{% endif %}>Removed</option>
-        </select>
-    </div>
-    <button type="submit" class="btn btn-primary">Submit</button>
-    <a href="/items" class="btn btn-secondary">Cancel</a>
-</form>
+</div>
 {% endblock %}
